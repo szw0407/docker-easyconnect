@@ -3,10 +3,10 @@ name: Check EasyConnect versions
 on: [pull_request]
 
 jobs:
-  build:
-
+  check:
     runs-on: ubuntu-latest
-
+    outputs:
+      different: {{ steps.compare.outputs.different }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -32,7 +32,8 @@ jobs:
           git push
         if: steps.compare.outputs.different == 'true'
 
-      - name: Rebuild EasyConnect
-        uses: ./.github/workflows/build-and-push-docker-image.yml
-        secrets: inherit
-        if: steps.compare.outputs.different == 'true'
+  rebuild:
+    uses: ./.github/workflows/build-and-push-docker-image.yml
+    secrets: inherit
+    needs: check
+    if: needs.check.outputs.different == 'true'
